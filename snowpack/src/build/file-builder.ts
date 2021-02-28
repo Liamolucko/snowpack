@@ -325,7 +325,7 @@ export class FileBuilder {
   }
 
   getSourceMap(type: string): string | undefined {
-    return this.resolvedOutput[type].map;
+    return this.resolvedOutput[type]?.map;
   }
 
   async getProxy(_url: string, type: string) {

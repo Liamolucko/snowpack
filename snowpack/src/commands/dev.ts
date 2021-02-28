@@ -404,6 +404,7 @@ export async function startServer(
       isResolve: _isResolve,
       encoding: _encoding,
       importMap,
+      existingSourceMap = false,
     }: LoadUrlOptions = {},
   ): Promise<LoadResult> {
     const isSSR = _isSSR ?? false;
@@ -412,7 +413,10 @@ export async function startServer(
     const encoding = _encoding ?? null;
     const reqUrlHmrParam = reqUrl.includes('?mtime=') && reqUrl.split('?')[1];
     const reqPath = decodeURI(url.parse(reqUrl).pathname!);
-    const resourcePath = reqPath.replace(/\.map$/, '').replace(/\.proxy\.js$/, '');
+    const resourcePath = (existingSourceMap ? reqPath : reqPath.replace(/\.map$/, '')).replace(
+      /\.proxy\.js$/,
+      '',
+    );
     const resourceType = path.extname(resourcePath) || '.html';
 
     if (reqPath === getMetaUrlPath('/hmr-client.js', config)) {
@@ -598,8 +602,17 @@ export async function startServer(
       }
       if (reqPath.endsWith('.proxy.js')) {
         finalizedResponse = await fileBuilder.getProxy(resourcePath, resourceType);
-      } else if (reqPath.endsWith('.map')) {
+      } else if (reqPath.endsWith('.map') && !existingSourceMap) {
         finalizedResponse = fileBuilder.getSourceMap(resourcePath);
+        if (!finalizedResponse) {
+          return loadUrl(reqUrl, {
+            isSSR: _isSSR,
+            isHMR: _isHMR,
+            isResolve: _isResolve,
+            importMap,
+            existingSourceMap: true,
+          });
+        }
       } else {
         if (foundFile.isResolve) {
           // TODO: Warn if reqUrlHmrParam was needed here? HMR can't work if URLs aren't resolved.

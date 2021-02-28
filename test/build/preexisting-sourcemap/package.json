@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "version": "1.0.1",
+  "name": "@snowpack/test-preexisting-sourcemap",
+  "scripts": {
+    "testbuild": "snowpack build"
+  },
+  "devDependencies": {
+    "snowpack": "^3.0.0"
+  }
+}
